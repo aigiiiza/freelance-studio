@@ -1,7 +1,7 @@
 import {UrlUtils} from "../../utils/url-utils";
-import {FreelancersService} from "../../services/freelancers-service";
+import {OrdersService} from "../../services/orders-service";
 
-export class FreelancersDelete {
+export class OrdersDelete {
     constructor(openNewRoute) {
         this.openNewRoute = openNewRoute;
         const id = UrlUtils.getUrlParam('id');
@@ -9,17 +9,17 @@ export class FreelancersDelete {
             return this.openNewRoute('/');
         }
 
-        this.deleteFreelancer(id).then();
+        this.deleteOrder(id).then();
     }
 
-    async deleteFreelancer(id) {
-        const response = await FreelancersService.deleteFreelancer(id);
+    async deleteOrder(id) {
+        const response = await OrdersService.deleteOrder(id);
 
         if (response.error) {
             alert(response.error);
             return response.redirect ? this.openNewRoute(response.redirect) : null;
         }
 
-        return this.openNewRoute('/freelancers');
+        return this.openNewRoute('/orders');
     }
 }

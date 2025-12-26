@@ -10,12 +10,17 @@ import {FreelancersEdit} from "./components/freelancers/freelancers-edit";
 import {FreelancersDelete} from "./components/freelancers/freelancers-delete";
 import {OrdersList} from "./components/orders/orders-list";
 import {OrdersView} from "./components/orders/orders-view";
+import {OrdersCreate} from "./components/orders/orders-create";
+import {OrdersEdit} from "./components/orders/orders-edit";
+import {OrdersDelete} from "./components/orders/orders-delete";
+import {AuthUtils} from "./utils/auth-utils";
 
 export class Router {
     constructor() {
         this.titlePageElement = document.getElementById('title');
         this.contentPageElement = document.getElementById('content');
         this.adminLteStyleElement = document.getElementById('adminlte_style');
+        this.userName = null;
 
         this.initEvents();
         this.routes = [
@@ -25,8 +30,15 @@ export class Router {
                 filePathTemplate: '/templates/pages/dashboard.html',
                 useLayout: '/templates/layout.html',
                 load: () => {
-                    new Dashboard();
-                }
+                    new Dashboard(this.openNewRoute.bind(this));
+                },
+                scripts: [
+                    'moment.min.js',
+                    'moment-ru-locale.js',
+                    'fullcalendar.js',
+                    'fullcalendar-locale-ru.js'
+                ],
+                styles: ['fullcalendar.css']
             },
             {
                 route: '/404',
@@ -138,6 +150,52 @@ export class Router {
                     new OrdersView(this.openNewRoute.bind(this));
                 }
             },
+            {
+                route: '/orders/create',
+                title: 'Создание заказа',
+                filePathTemplate: '/templates/pages/orders/create.html',
+                useLayout: '/templates/layout.html',
+                load: () => {
+                    new OrdersCreate(this.openNewRoute.bind(this));
+                },
+                scripts: [
+                    'moment.min.js',
+                    'moment-ru-locale.js',
+                    'tempusdominus-bootstrap-4.min.js',
+                    'select2.full.min.js'
+                ],
+                styles: [
+                    'tempusdominus-bootstrap-4.min.css',
+                    'select2.min.css',
+                    'select2-bootstrap4.min.css'
+                ]
+            },
+            {
+                route: '/orders/edit',
+                title: 'Редактирование заказа',
+                filePathTemplate: '/templates/pages/orders/edit.html',
+                useLayout: '/templates/layout.html',
+                load: () => {
+                    new OrdersEdit(this.openNewRoute.bind(this));
+                },
+                scripts: [
+                    'moment.min.js',
+                    'moment-ru-locale.js',
+                    'tempusdominus-bootstrap-4.min.js',
+                    'select2.full.min.js'
+                ],
+                styles: [
+                    'tempusdominus-bootstrap-4.min.css',
+                    'select2.min.css',
+                    'select2-bootstrap4.min.css'
+                ]
+            },
+            {
+                route: '/orders/delete',
+                load: () => {
+                    new OrdersDelete(this.openNewRoute.bind(this));
+                },
+            },
         ];
     }
 
@@ -218,10 +276,25 @@ export class Router {
                     this.contentPageElement.innerHTML = await fetch(newRoute.useLayout).then(response => response.text());
                     contentBlock = document.getElementById('content-layout');
                     document.body.classList.add('sidebar-mini');
-                    document.body.classList.add('sidebar-collapse');
+                    document.body.classList.add('layout-fixed');
+
+
+                    this.profileNameElement = document.getElementById('profile-name');
+                    if (!this.userName) {
+                        let userInfo = AuthUtils.getAuthInfo(AuthUtils.userInfoTokenKey);
+                        if (userInfo) {
+                            userInfo = JSON.parse(userInfo);
+                            if (userInfo.name) {
+                                this.userName = userInfo.name;
+                            }
+                        }
+                    }
+                    this.profileNameElement.innerText = this.userName;
+
+                    this.activateMenuItem(newRoute);
                 } else {
                     document.body.classList.remove('sidebar-mini');
-                    document.body.classList.remove('sidebar-collapse');
+                    document.body.classList.remove('layout-fixed');
                 }
                 contentBlock.innerHTML = await fetch(newRoute.filePathTemplate).then(response => response.text());
             }
@@ -232,8 +305,19 @@ export class Router {
         } else {
             console.log('No route found');
             history.pushState({}, '', '/404');
-            await this.activateRoute();
+            await this.activateRoute(null);
         }
+    }
+
+    activateMenuItem(route) {
+        document.querySelectorAll('.sidebar .nav-link').forEach(item => {
+            const href = item.getAttribute('href');
+            if ((route.route.includes(href) && href !== '/') || (route.route === '/' && href === '/')) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
     }
 }
 

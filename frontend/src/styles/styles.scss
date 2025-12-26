@@ -1,5 +1,5 @@
-@import "freelancers";
-@import "orders";
+@use"freelancers";
+@use "orders";
 
 .sidebar {
   .image {
@@ -11,4 +11,12 @@
       align-items: center;
     }
   }
+}
+
+.fc-daygrid-event {
+  white-space: normal;
+}
+
+.fc-daygrid-block-event .fc-event-time, .fc-daygrid-block-event .fc-event-title {
+  padding: 3px;
 }
